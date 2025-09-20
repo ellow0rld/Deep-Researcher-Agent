@@ -11,10 +11,11 @@ sentencepiece==0.1.98  # prebuilt wheel for Python 3.11
 
 # HuggingFace
 transformers==4.44.0
-huggingface_hub>=0.23.2,<1.0
+huggingface_hub>=0.14.1
 pyyaml>=6.0
 
 # Utilities
 nltk==3.9.1
 rich>=10.14.0,<14
+
 
