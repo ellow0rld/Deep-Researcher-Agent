@@ -89,19 +89,30 @@ if st.button("Send") and user_input.strip():
 # ------------------------
 # Display Chat History
 # ------------------------
-st.subheader("💬 Conversation")
-for msg in st.session_state.chat_history:
-    if msg["role"] == "user":
-        st.chat_message("user").markdown(msg["content"])
-    else:
-        assistant_msg = st.chat_message("assistant")
-        assistant_msg.markdown(msg["content"])
-        
-        if "analysis" in msg:
-            with assistant_msg.expander("📄 Document Similarity Analysis"):
-                for doc in msg["analysis"]:
-                    st.write(f"- **{doc['doc_id']}** | Similarity: {doc['similarity']:.4f}")
+user_input = st.text_input("Enter your query here:")
 
+if st.button("Send") and user_input.strip():
+    user_msg = user_input.strip()
+    
+    # Add user message
+    st.session_state.chat_history.append({"role": "user", "content": user_msg})
+    
+    # Generate AI response with analysis
+    with st.spinner("Generating response..."):
+        context = [(msg["content"], msg.get("response","")) 
+                   for msg in st.session_state.chat_history 
+                   if msg["role"] == "user"]
+        
+        response, analysis = agent.process_query(user_msg, context=context, top_k=3)
+        
+        # Store assistant response and per-query analysis
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": response,
+            "analysis": analysis,
+            "query": user_msg
+        })
+        
 # ------------------------
 # Export Full Session
 # ------------------------
