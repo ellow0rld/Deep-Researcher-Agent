@@ -6,14 +6,13 @@ from research_agent.agent import ResearchAgent
 # Constants
 # ------------------------
 CACHE_PATH = "./cache/embeddings.pkl"
-MODEL_PATH = "./models/all-MiniLM-L6-v2"
 
 # ------------------------
 # Load Agent (cached)
 # ------------------------
 @st.cache_resource(show_spinner=False)
-def load_agent(model_path=MODEL_PATH, cache_path=CACHE_PATH):
-    return ResearchAgent(model_path=model_path, cache_path=cache_path)
+def load_agent(cache_path=CACHE_PATH):
+    return ResearchAgent(cache_path=cache_path)
 
 agent = load_agent()
 
