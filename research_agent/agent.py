@@ -42,7 +42,23 @@ class ResearchAgent:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(report_text)
                 return path
-    
-    
+    def process_query(self, query, top_k=5):
+        """
+        Process a single user query and return the AI-generated response.
+        Returns:
+            report_text: str
+            docs: list of retrieved documents
+        """
+        q_emb = self.embedding_engine.generate_embedding(query)
+        docs = self.vector_storage.retrieve_similar(q_emb, k=top_k)
+
+        if docs:
+            summary = self.summarizer.summarize(docs)
+            report_text = f"Query: {query}\n\nSummary of relevant documents:\n{summary}"
+        else:
+            report_text = f"Query: {query}\n\n⚠️ No relevant documents found."
+
+        return report_text, docs
+
 
 
