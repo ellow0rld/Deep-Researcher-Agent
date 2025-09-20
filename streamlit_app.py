@@ -19,17 +19,15 @@ if "agent" not in st.session_state:
 agent = st.session_state.agent
 
 # Initialize session states
-if "final_report" not in st.session_state:
-    st.session_state.final_report = None
-if "all_reports" not in st.session_state:
-    st.session_state.all_reports = []
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []  # stores tuples: (query, response)
 
 # ------------------------
 # UI
 # ------------------------
 st.title("🧠 Deep Researcher Agent")
 st.write(
-    "A local AI-powered research assistant that handles queries, reasoning, summarization, and exports reports."
+    "A local AI-powered research assistant. Ask research questions, explore follow-ups, and export the full session."
 )
 
 # Upload documents
@@ -51,7 +49,6 @@ if uploaded_files:
                     if page_text:
                         content += page_text + "\n"
             else:
-                # For TXT and JSON
                 content = f.read().decode("utf-8")
             
             docs.append({"id": f.name, "content": content, "metadata": {}})
@@ -63,39 +60,38 @@ if uploaded_files:
         st.success(f"{len(docs)} documents added to knowledge base.")
 
 # ------------------------
-# Query input
+# Chat input
 # ------------------------
-query = st.text_input("Enter your research query:")
+st.subheader("💬 Research Chat")
+user_query = st.text_input("Enter your question or follow-up:")
 
-if st.button("Run Research") and query.strip():
-    with st.spinner("Processing query..."):
-        q_emb = agent.embedding_engine.generate_embedding(query)
+if st.button("Send") and user_query.strip():
+    with st.spinner("Processing..."):
+        q_emb = agent.embedding_engine.generate_embedding(user_query)
         docs = agent.vector_storage.retrieve_similar(q_emb, k=5)
 
         summary = agent.summarizer.summarize(docs)
-        explanation = agent.reasoner.explain_reasoning([query])
+        explanation = agent.reasoner.explain_reasoning([user_query])
 
-        report = f"Query: {query}\n\nReasoning Steps:\n{explanation}\n\nSummary:\n{summary}"
-        st.session_state.final_report = report
-        st.session_state.all_reports.append(report)
-
-# ------------------------
-# Show results
-# ------------------------
-if st.session_state.final_report:
-    st.subheader("📝 Latest Report")
-    st.text(st.session_state.final_report)
-
-    st.subheader("📚 Full Research Session")
-    for i, rep in enumerate(st.session_state.all_reports, 1):
-        with st.expander(f"Report {i}"):
-            st.text(rep)
+        response = f"**Reasoning Steps:**\n{explanation}\n\n**Summary:**\n{summary}"
+        st.session_state.chat_history.append((user_query, response))
 
 # ------------------------
-# Export
+# Show chat history
 # ------------------------
-if st.session_state.all_reports:
-    combined_report = "\n\n---\n\n".join(st.session_state.all_reports)
+if st.session_state.chat_history:
+    for i, (q, r) in enumerate(st.session_state.chat_history, 1):
+        st.markdown(f"**🧑 Query {i}:** {q}")
+        st.markdown(f"**🤖 Response {i}:**\n{r}")
+        st.write("---")
+
+# ------------------------
+# Export results
+# ------------------------
+if st.session_state.chat_history:
+    combined_report = ""
+    for i, (q, r) in enumerate(st.session_state.chat_history, 1):
+        combined_report += f"Query {i}: {q}\n\nResponse {i}:\n{r}\n\n---\n\n"
 
     st.subheader("📤 Export Results")
     col1, col2 = st.columns(2)
@@ -104,11 +100,11 @@ if st.session_state.all_reports:
         st.download_button(
             label="Download PDF",
             data=agent.export_report(
-                combined_report, 
-                format="pdf", 
+                combined_report,
+                format="pdf",
                 return_bytes=True
             ),
-            file_name="research_report.pdf",
+            file_name="research_session.pdf",
             mime="application/pdf"
         )
 
@@ -116,28 +112,10 @@ if st.session_state.all_reports:
         st.download_button(
             label="Download Markdown",
             data=agent.export_report(
-                combined_report, 
-                format="md", 
+                combined_report,
+                format="md",
                 return_bytes=True
             ),
-            file_name="research_report.md",
+            file_name="research_session.md",
             mime="text/markdown"
         )
-
-# ------------------------
-# Follow-up queries
-# ------------------------
-if st.session_state.final_report:
-    st.subheader("🔄 Follow-up Query")
-    follow_up = st.text_input("Ask a follow-up question:")
-    if st.button("Run Follow-up") and follow_up.strip():
-        with st.spinner("Processing follow-up..."):
-            q_emb = agent.embedding_engine.generate_embedding(follow_up)
-            docs = agent.vector_storage.retrieve_similar(q_emb, k=5)
-
-            summary = agent.summarizer.summarize(docs)
-            explanation = agent.reasoner.explain_reasoning([follow_up])
-
-            report = f"Follow-up Query: {follow_up}\n\nReasoning Steps:\n{explanation}\n\nSummary:\n{summary}"
-            st.session_state.final_report = report
-            st.session_state.all_reports.append(report)
