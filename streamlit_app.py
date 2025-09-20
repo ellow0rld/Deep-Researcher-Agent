@@ -93,7 +93,7 @@ if st.session_state.confirm_pressed and st.session_state.refined_tasks:
         task_results = []
         for task in refined_tasks:
             q_emb = agent.embedding_engine.generate_embedding(task)
-            docs = agent.vector_storage.retrieve_similar(q_emb, k=5)
+            docs = agent.vector_storage.retrieve_similar(q_emb, len(docs))
             task_results.append({"task": task, "docs": docs})
 
         # Summarize all retrieved documents
