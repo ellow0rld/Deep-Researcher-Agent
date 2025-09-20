@@ -1,5 +1,6 @@
 import os
 import streamlit as st
+import PyPDF2
 from pathlib import Path
 from research_agent.agent import ResearchAgent
 
