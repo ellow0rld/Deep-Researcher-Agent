@@ -65,18 +65,26 @@ if uploaded_files:
 # ------------------------
 # Chat Input
 # ------------------------
-user_input = st.text_input("Enter your query:")
-send_clicked = st.button("Send")
-
-if send_clicked and user_input and isinstance(user_input, str) and user_input.strip():
+if st.button("Send") and user_input.strip():
     user_msg = user_input.strip()
-    # Add user message
+    
+    # Add user message to chat history
     st.session_state.chat_history.append({"role": "user", "content": user_msg})
-
-    # Generate AI response
+    
+    # Generate AI response with analysis
     with st.spinner("Generating response..."):
-        report_text, _ = agent.process_query(user_msg)
-        st.session_state.chat_history.append({"role": "assistant", "content": report_text})
+        context = [(msg["content"], msg.get("response","")) 
+                   for msg in st.session_state.chat_history 
+                   if msg["role"] == "user"]
+        
+        response, analysis = agent.process_query(user_msg, context=context, top_k=3)
+        
+        # Add AI message + analysis to chat
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": response,
+            "analysis": analysis
+        })
 
 # ------------------------
 # Display Chat History
@@ -86,7 +94,14 @@ for msg in st.session_state.chat_history:
     if msg["role"] == "user":
         st.chat_message("user").markdown(msg["content"])
     else:
-        st.chat_message("assistant").markdown(msg["content"])
+        assistant_msg = st.chat_message("assistant")
+        assistant_msg.markdown(msg["content"])
+        
+        # Show contributing documents
+        if "analysis" in msg:
+            with assistant_msg.expander("📄 Contributing Documents"):
+                for doc in msg["analysis"]:
+                    st.write(f"- **{doc['id']}** | Similarity: {doc['score']:.4f}")
 
 # ------------------------
 # Export Full Session
