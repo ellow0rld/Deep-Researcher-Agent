@@ -17,7 +17,9 @@ if "agent" not in st.session_state:
 
 agent = st.session_state.agent
 
-# Initialize chat history
+# ------------------------
+# Initialize Chat History
+# ------------------------
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -51,6 +53,7 @@ if uploaded_files:
                         content += page_text + "\n"
             else:
                 content = f.read().decode("utf-8")
+            
             docs.append({"id": f.name, "content": content, "metadata": {}})
         except Exception as e:
             st.warning(f"Failed to process {f.name}: {e}")
@@ -62,15 +65,17 @@ if uploaded_files:
 # ------------------------
 # Chat Input
 # ------------------------
-user_input = st.text_input("Enter your query or follow-up:")
+user_input = st.text_input("Enter your query:")
+send_clicked = st.button("Send")
 
-if st.button("Send") and user_input.strip():
-    # Append user message
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
+if send_clicked and user_input and isinstance(user_input, str) and user_input.strip():
+    user_msg = user_input.strip()
+    # Add user message
+    st.session_state.chat_history.append({"role": "user", "content": user_msg})
 
     # Generate AI response
     with st.spinner("Generating response..."):
-        report_text, _ = agent.process_query(user_input)
+        report_text, _ = agent.process_query(user_msg)
         st.session_state.chat_history.append({"role": "assistant", "content": report_text})
 
 # ------------------------
@@ -78,20 +83,20 @@ if st.button("Send") and user_input.strip():
 # ------------------------
 st.subheader("💬 Conversation")
 for msg in st.session_state.chat_history:
-    st.chat_message(msg["role"]).markdown(msg["content"])
+    if msg["role"] == "user":
+        st.chat_message("user").markdown(msg["content"])
+    else:
+        st.chat_message("assistant").markdown(msg["content"])
 
 # ------------------------
 # Export Full Session
 # ------------------------
 if st.session_state.chat_history:
-    st.subheader("📤 Export Full Session")
-
-    # Combine all messages into a single report
     full_report = ""
     for msg in st.session_state.chat_history:
-        role = "User" if msg["role"] == "user" else "AI"
-        full_report += f"{role}:\n{msg['content']}\n\n"
+        full_report += f"{msg['role'].capitalize()}: {msg['content']}\n\n"
 
+    st.subheader("📤 Export Full Session")
     col1, col2 = st.columns(2)
 
     with col1:
