@@ -3,11 +3,12 @@ from .embedding import LocalEmbeddingEngine
 from .storage import VectorStorage
 from .reasoning import MultiStepReasoner
 from .summarizer import ExtractiveSummarizer
+from .agent import ResearchAgent
 from fpdf import FPDF
 
 class ResearchAgent:
-    def __init__(self, model_path="./models/all-MiniLM-L6-v2", cache_path="./cache/embeddings.pkl"):
-        self.embedding_engine = LocalEmbeddingEngine(model_path)
+    def __init__(self, cache_path="./cache/embeddings.pkl"):
+        self.embedding_engine = LocalEmbeddingEngine()
         self.vector_storage = VectorStorage(cache_path)
         self.reasoner = MultiStepReasoner()
         self.summarizer = ExtractiveSummarizer()
@@ -31,3 +32,4 @@ class ResearchAgent:
             with open(path, "w") as f:
                 f.write(text)
             return path
+
