@@ -104,12 +104,25 @@ if st.session_state.confirm_pressed and st.session_state.refined_tasks:
 # Export
 if "final_report" in st.session_state:
     st.subheader("📤 Export Results")
+
+    # Generate PDF or Markdown in memory
+    pdf_bytes = agent.export_report(st.session_state.final_report, format="pdf", return_bytes=True)
+    md_bytes = agent.export_report(st.session_state.final_report, format="md", return_bytes=True)
+
     col1, col2 = st.columns(2)
+
     with col1:
-        if st.button("Export as PDF"):
-            pdf_path = agent.export_report(st.session_state.final_report, format="pdf")
-            st.success(f"PDF saved at: {pdf_path}")
+        st.download_button(
+            label="Download PDF",
+            data=pdf_bytes,
+            file_name="research_report.pdf",
+            mime="application/pdf"
+        )
+
     with col2:
-        if st.button("Export as Markdown"):
-            md_path = agent.export_report(st.session_state.final_report, format="md")
-            st.success(f"Markdown saved at: {md_path}")
+        st.download_button(
+            label="Download Markdown",
+            data=md_bytes,
+            file_name="research_report.md",
+            mime="text/markdown"
+        )
