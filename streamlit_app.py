@@ -10,7 +10,8 @@ from research_agent.agent import ResearchAgent
 CACHE_PATH = "./cache/embeddings.pkl"
 
 if "agent" not in st.session_state:
-    st.session_state.agent = ResearchAgent(cache_path=CACHE_PATH)
+    with st.spinner("Loading AI model... this may take a while"):
+        st.session_state.agent = ResearchAgent(cache_path=CACHE_PATH)
 
 agent = st.session_state.agent
 
