@@ -1,9 +1,10 @@
 import os
 import io
-from .embedding import LocalEmbeddingEngine
-from .storage import VectorStorage
-from .reasoning import MultiStepReasoner
-from .summarizer import ExtractiveSummarizer
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from research_agent.embedding import LocalEmbeddingEngine
+from research_agent.storage import VectorStorage
+from research_agent.reasoning import MultiStepReasoner
+from research_agent.summarizer import ExtractiveSummarizer
 from fpdf import FPDF
 
 class ResearchAgent:
@@ -47,3 +48,4 @@ class ResearchAgent:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(md_content)
                 return path
+
