@@ -24,13 +24,13 @@ if "chat_history" not in st.session_state:
 # ------------------------
 # UI
 # ------------------------
-st.title("🧠 Deep Researcher Agent - Chat Session")
+st.title("🧠 Deep Researcher Agent")
 st.write(
-    "Ask research questions, get answers, and continue with follow-up queries. Export the full session at any time."
+    "A local AI-powered research assistant that handles queries, reasoning, summarization, and exports reports."
 )
 
 # ------------------------
-# Upload documents
+# Upload Documents
 # ------------------------
 uploaded_files = st.file_uploader(
     "Upload documents (TXT, JSON, or PDF)",
@@ -51,7 +51,6 @@ if uploaded_files:
                         content += page_text + "\n"
             else:
                 content = f.read().decode("utf-8")
-
             docs.append({"id": f.name, "content": content, "metadata": {}})
         except Exception as e:
             st.warning(f"Failed to process {f.name}: {e}")
@@ -61,61 +60,52 @@ if uploaded_files:
         st.success(f"{len(docs)} documents added to knowledge base.")
 
 # ------------------------
-# Chat input
+# Chat Input
 # ------------------------
-user_input = st.text_input("Enter your query:")
+user_input = st.text_input("Enter your query or follow-up:")
 
 if st.button("Send") and user_input.strip():
-    # Add user message
+    # Append user message
     st.session_state.chat_history.append({"role": "user", "content": user_input})
 
-    # Generate response
+    # Generate AI response
     with st.spinner("Generating response..."):
-        report_text, task_results = agent.process_query(user_input)
+        report_text, _ = agent.process_query(user_input)
         st.session_state.chat_history.append({"role": "assistant", "content": report_text})
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-user_input = st.text_input("Enter your query:")
-if st.button("Send") and user_input.strip():
-    # Add user message
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-    # Generate response
-    report_text, task_results = agent.process_query(user_input)
-    st.session_state.chat_history.append({"role": "assistant", "content": report_text})
-
 # ------------------------
-# Display chat history
+# Display Chat History
 # ------------------------
 st.subheader("💬 Conversation")
 for msg in st.session_state.chat_history:
     st.chat_message(msg["role"]).markdown(msg["content"])
 
 # ------------------------
-# Export full session
+# Export Full Session
 # ------------------------
 if st.session_state.chat_history:
     st.subheader("📤 Export Full Session")
 
-    # Build full session text
-    full_text = ""
+    # Combine all messages into a single report
+    full_report = ""
     for msg in st.session_state.chat_history:
-        full_text += f"{msg['role'].capitalize()}: {msg['content']}\n\n"
+        role = "User" if msg["role"] == "user" else "AI"
+        full_report += f"{role}:\n{msg['content']}\n\n"
 
     col1, col2 = st.columns(2)
+
     with col1:
         st.download_button(
             label="Download PDF",
-            data=agent.export_report(full_text, format="pdf", return_bytes=True),
+            data=agent.export_report(full_report, format="pdf", return_bytes=True),
             file_name="research_session.pdf",
             mime="application/pdf"
         )
+
     with col2:
         st.download_button(
             label="Download Markdown",
-            data=agent.export_report(full_text, format="md", return_bytes=True),
+            data=agent.export_report(full_report, format="md", return_bytes=True),
             file_name="research_session.md",
             mime="text/markdown"
         )
