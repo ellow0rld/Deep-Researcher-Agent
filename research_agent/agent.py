@@ -1,5 +1,5 @@
 import os
-import io
+import sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from research_agent.embedding import LocalEmbeddingEngine
 from research_agent.storage import VectorStorage
@@ -43,3 +43,4 @@ class ResearchAgent:
                 return path
     
     
+
