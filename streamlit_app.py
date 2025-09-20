@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from pathlib import Path
 from research_agent.agent import ResearchAgent
