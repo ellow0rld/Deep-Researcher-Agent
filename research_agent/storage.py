@@ -20,7 +20,7 @@ class VectorStorage:
         with open(self.cache_path, "wb") as f:
             pickle.dump(self.vectors, f)
 
-    def retrieve_similar(self, query_emb, k=5):
+    def retrieve_similar(self, query_emb, k=len(docs):
         if not self.vectors:
             return []
         scores = []
@@ -29,3 +29,4 @@ class VectorStorage:
             scores.append({"doc": doc, "score": float(sim)})
         scores.sort(key=lambda x: x["score"], reverse=True)
         return [{"id": s["doc"]["id"], "content": s["doc"]["content"], "score": s["score"]} for s in scores[:k]]
+
