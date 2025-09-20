@@ -91,9 +91,9 @@ if st.button("Send", key="send_button") and user_input.strip():
 # ------------------------
 # Display Chat History
 # ------------------------
-user_input = st.text_input("Enter your query here:")
+user_input = st.text_input("Enter your query here:", key="chat_input")
 
-if st.button("Send") and user_input.strip():
+if st.button("Send", key="send_button") and user_input.strip():
     user_msg = user_input.strip()
     
     # Add user message
