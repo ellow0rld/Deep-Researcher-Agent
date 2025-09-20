@@ -18,10 +18,6 @@ class ResearchAgent:
         self.vector_storage.add_documents(docs, self.embedding_engine)
 
     def export_report(self, report_text, format="pdf", return_bytes=False):
-        """
-        Export the report as PDF or Markdown.
-        If return_bytes=True, returns the file content as bytes.
-        """
         if format == "pdf":
             pdf = FPDF()
             pdf.add_page()
@@ -29,23 +25,21 @@ class ResearchAgent:
             pdf.set_font("Arial", size=12)
             for line in report_text.split("\n"):
                 pdf.multi_cell(0, 5, line)
-            
+    
             if return_bytes:
-                # Get PDF content as bytes
-                pdf_bytes = pdf.output(dest='S').encode('latin1')
-                return pdf_bytes
+                return pdf.output(dest='S').encode('latin1')  # PDF bytes
             else:
                 path = "./report.pdf"
                 pdf.output(path)
                 return path
     
         elif format == "md":
-            md_content = report_text
             if return_bytes:
-                return md_content.encode("utf-8")
+                return report_text.encode("utf-8")
             else:
                 path = "./report.md"
                 with open(path, "w", encoding="utf-8") as f:
-                    f.write(md_content)
+                    f.write(report_text)
                 return path
-
+    
+    
