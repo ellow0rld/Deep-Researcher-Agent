@@ -68,7 +68,7 @@ if uploaded_files:
 if st.button("Send") and user_input.strip():
     user_msg = user_input.strip()
     
-    # Add user message to chat history
+    # Add user message
     st.session_state.chat_history.append({"role": "user", "content": user_msg})
     
     # Generate AI response with analysis
@@ -79,13 +79,13 @@ if st.button("Send") and user_input.strip():
         
         response, analysis = agent.process_query(user_msg, context=context, top_k=3)
         
-        # Add AI message + analysis to chat
+        # Store assistant response and per-query analysis
         st.session_state.chat_history.append({
             "role": "assistant",
             "content": response,
-            "analysis": analysis
+            "analysis": analysis,
+            "query": user_msg
         })
-
 # ------------------------
 # Display Chat History
 # ------------------------
@@ -97,11 +97,10 @@ for msg in st.session_state.chat_history:
         assistant_msg = st.chat_message("assistant")
         assistant_msg.markdown(msg["content"])
         
-        # Show contributing documents
         if "analysis" in msg:
-            with assistant_msg.expander("📄 Contributing Documents"):
+            with assistant_msg.expander("📄 Document Similarity Analysis"):
                 for doc in msg["analysis"]:
-                    st.write(f"- **{doc['id']}** | Similarity: {doc['score']:.4f}")
+                    st.write(f"- **{doc['doc_id']}** | Similarity: {doc['similarity']:.4f}")
 
 # ------------------------
 # Export Full Session
