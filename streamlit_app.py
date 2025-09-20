@@ -25,12 +25,12 @@ st.write(
 # Upload Documents (cached)
 # ------------------------
 @st.cache_data(show_spinner=False)
-def add_documents(agent, uploaded_files):
+def add_documents(_agent, uploaded_files):
     docs = []
     for f in uploaded_files:
         content = f.read().decode("utf-8")
         docs.append({"id": f.name, "content": content, "metadata": {}})
-    agent.add_documents(docs)
+    _agent.add_documents(docs)
     return len(docs)
 
 uploaded_files = st.file_uploader(
