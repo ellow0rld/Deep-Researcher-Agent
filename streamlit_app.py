@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+from research_agent import ResearchAgent
 
 st.title("🧠 Deep Researcher Agent Debug")
 
