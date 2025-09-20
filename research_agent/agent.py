@@ -42,23 +42,30 @@ class ResearchAgent:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(report_text)
                 return path
-    def process_query(self, query, top_k=5):
+    def process_query(self, query, context=None, top_k=5):
         """
-        Process a single user query and return the AI-generated response.
-        Returns:
-            report_text: str
-            docs: list of retrieved documents
+        Process a query and return a meaningful response.
+        context: list of previous queries/responses
         """
+        # Generate embedding
         q_emb = self.embedding_engine.generate_embedding(query)
+        # Retrieve top documents
         docs = self.vector_storage.retrieve_similar(q_emb, k=top_k)
 
-        if docs:
-            summary = self.summarizer.summarize(docs)
-            report_text = f"Query: {query}\n\nSummary of relevant documents:\n{summary}"
+        # Prepare context + docs content
+        doc_texts = [d["content"] for d in docs]
+        if context:
+            prompt_text = "\n".join([f"Q: {q}\nA: {a}" for q, a in context])
+            prompt_text += "\n\n"
         else:
-            report_text = f"Query: {query}\n\n⚠️ No relevant documents found."
+            prompt_text = ""
 
-        return report_text, docs
+        # Combine docs + prompt for reasoning
+        reasoning_input = prompt_text + f"Q: {query}\nA:"
+        response = self.reasoner.answer_query(reasoning_input, doc_texts)
+
+        return response, docs
+
 
 
 
