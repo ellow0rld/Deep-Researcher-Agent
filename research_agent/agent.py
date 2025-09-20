@@ -3,7 +3,6 @@ from .embedding import LocalEmbeddingEngine
 from .storage import VectorStorage
 from .reasoning import MultiStepReasoner
 from .summarizer import ExtractiveSummarizer
-from .agent import ResearchAgent
 from fpdf import FPDF
 
 class ResearchAgent:
@@ -32,4 +31,5 @@ class ResearchAgent:
             with open(path, "w") as f:
                 f.write(text)
             return path
+
 
