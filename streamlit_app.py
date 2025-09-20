@@ -7,11 +7,10 @@ from research_agent.agent import ResearchAgent
 # ------------------------
 # Initialize Agent
 # ------------------------
-MODEL_PATH = "./models/all-MiniLM-L6-v2"
 CACHE_PATH = "./cache/embeddings.pkl"
 
 if "agent" not in st.session_state:
-    st.session_state.agent = ResearchAgent(model_path=MODEL_PATH, cache_path=CACHE_PATH)
+    st.session_state.agent = ResearchAgent(cache_path=CACHE_PATH)
 
 agent = st.session_state.agent
 
