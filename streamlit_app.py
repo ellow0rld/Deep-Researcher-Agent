@@ -74,6 +74,18 @@ if st.button("Send") and user_input.strip():
         report_text, task_results = agent.process_query(user_input)
         st.session_state.chat_history.append({"role": "assistant", "content": report_text})
 
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+user_input = st.text_input("Enter your query:")
+if st.button("Send") and user_input.strip():
+    # Add user message
+    st.session_state.chat_history.append({"role": "user", "content": user_input})
+
+    # Generate response
+    report_text, task_results = agent.process_query(user_input)
+    st.session_state.chat_history.append({"role": "assistant", "content": report_text})
+
 # ------------------------
 # Display chat history
 # ------------------------
