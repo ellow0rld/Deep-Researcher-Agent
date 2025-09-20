@@ -2,11 +2,11 @@
 numpy==1.25.2
 scikit-learn==1.2.2
 torch==2.2.0
-transformers==4.44.0
+transformers==4.31.0
 sentence-transformers==2.2.2
 
 # Hugging Face hub (compatible with sentence-transformers 2.2.2)
-huggingface_hub==0.13.4
+huggingface_hub==0.15.1
 
 # Utilities
 nltk==3.9.1
@@ -18,3 +18,4 @@ streamlit==1.30.0
 
 # Optional but recommended for nicer logging
 rich==13.6.0
+
