@@ -35,15 +35,33 @@ st.write(
 
 # Upload documents
 uploaded_files = st.file_uploader(
-    "Upload documents (TXT or JSON)", type=["txt", "json"], accept_multiple_files=True
+    "Upload documents (TXT, JSON, or PDF)",
+    type=["txt", "json", "pdf"],
+    accept_multiple_files=True
 )
+
 if uploaded_files:
     docs = []
     for f in uploaded_files:
-        content = f.read().decode("utf-8")
-        docs.append({"id": f.name, "content": content, "metadata": {}})
-    agent.add_documents(docs)
-    st.success(f"{len(docs)} documents added to knowledge base.")
+        try:
+            if f.name.endswith(".pdf"):
+                pdf_reader = PyPDF2.PdfReader(f)
+                content = ""
+                for page in pdf_reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        content += page_text + "\n"
+            else:
+                # For TXT and JSON
+                content = f.read().decode("utf-8")
+            
+            docs.append({"id": f.name, "content": content, "metadata": {}})
+        except Exception as e:
+            st.warning(f"Failed to process {f.name}: {e}")
+
+    if docs:
+        agent.add_documents(docs)
+        st.success(f"{len(docs)} documents added to knowledge base.")
 
 # Query input
 query = st.text_input("Enter your research query:")
