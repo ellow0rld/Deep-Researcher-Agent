@@ -42,29 +42,40 @@ class ResearchAgent:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(report_text)
                 return path
-    def process_query(self, query, context=None, top_k=5):
-        """
-        Process a query and return a meaningful response.
-        context: list of previous queries/responses
-        """
-        # Generate embedding
-        q_emb = self.embedding_engine.generate_embedding(query)
-        # Retrieve top documents
-        docs = self.vector_storage.retrieve_similar(q_emb, k=top_k)
 
-        # Prepare context + docs content
-        doc_texts = [d["content"] for d in docs]
-        if context:
-            prompt_text = "\n".join([f"Q: {q}\nA: {a}" for q, a in context])
-            prompt_text += "\n\n"
-        else:
-            prompt_text = ""
+def process_query(self, query, context=None, top_k=5):
+    """
+    Process a query and return a meaningful response along with top contributing documents.
+    context: list of previous queries/responses
+    """
+    # Generate query embedding
+    q_emb = self.embedding_engine.generate_embedding(query)
+    
+    # Retrieve top-k similar documents
+    docs = self.vector_storage.retrieve_similar(q_emb, k=top_k)
+    
+    # Prepare document texts
+    doc_texts = [d["content"] for d in docs]
+    
+    # Prepare context prompt if available
+    if context:
+        prompt_text = "\n".join([f"Q: {q}\nA: {a}" for q, a in context])
+        prompt_text += "\n\n"
+    else:
+        prompt_text = ""
+    
+    # Combine docs + context for reasoning
+    reasoning_input = prompt_text + f"Q: {query}\nA:"
+    
+    # For hackathon simplicity: just concatenate top docs as "response"
+    response = "\n".join([f"{d['content'][:300]}..." for d in docs])  # show first 300 chars
+    
+    # Include doc IDs and similarity scores for explanation
+    analysis = [{"id": d["id"], "score": d["score"]} for d in docs]
+    
+    return response, analysis
 
-        # Combine docs + prompt for reasoning
-        reasoning_input = prompt_text + f"Q: {query}\nA:"
-        response = self.reasoner.answer_query(reasoning_input, doc_texts)
 
-        return response, docs
 
 
 
