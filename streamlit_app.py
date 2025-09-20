@@ -111,7 +111,7 @@ if st.session_state.confirm_pressed and st.session_state.refined_tasks:
         docs = r["docs"]
         with st.expander(f"Results for: {task}"):
             if docs:
-                for d in docs[:5]:  # limit top 5 docs
+                for d in docs[:len(docs)]:
                     st.write(f"**Doc ID:** {d['id']} | Score: {d['score']:.4f}")
                     st.write(d["content"])
                     st.write("---")
