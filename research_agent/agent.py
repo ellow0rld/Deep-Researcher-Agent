@@ -4,7 +4,7 @@ from .storage import VectorStorage
 from .reasoning import MultiStepReasoner
 from .summarizer import ExtractiveSummarizer
 from fpdf import FPDF
-from fpdf import FPDF
+import io
 
 class ResearchAgent:
     def __init__(self, cache_path="./cache/embeddings.pkl"):
@@ -48,3 +48,4 @@ class ResearchAgent:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(md_content)
                 return path
+
