@@ -71,8 +71,8 @@ if st.button("Send") and user_input.strip():
 
     # Generate response
     with st.spinner("Generating response..."):
-        response = agent.process_query(user_input)[0]  # only get final report text
-        st.session_state.chat_history.append({"role": "assistant", "content": response})
+        report_text, task_results = agent.process_query(user_input)
+        st.session_state.chat_history.append({"role": "assistant", "content": report_text})
 
 # ------------------------
 # Display chat history
