@@ -96,56 +96,34 @@ if user_input.strip() and st.button("Send", key="send_button"):
 # ------------------------
 if st.session_state.chat_history:
     st.subheader("💬 Conversation History")
-
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
             st.markdown(f"**You:** {msg['content']}")
         else:
             st.markdown(f"**Assistant:** {msg['content']}")
-
-            # 🎨 Render analysis in a nicer way
             if "analysis" in msg:
                 analysis = msg["analysis"]
+                # Display top-k chosen docs first
+                chosen_docs = analysis["chosen"]
+                all_docs = analysis["all_scores"]
 
-                st.markdown("### 📊 Analysis Report")
+                analysis_md = "<details><summary>📊 Analysis (click to expand)</summary>"
+                analysis_md += "<br><b>Top Contributing Documents:</b><br>"
+                analysis_md += "<ul>"
+                for doc in chosen_docs:
+                    analysis_md += f"<li>{doc['id']} | Similarity: {doc['score']:.4f}</li>"
+                analysis_md += "</ul><br>"
 
-                # If analysis is dict with scores + reasoning
-                if isinstance(analysis, dict):
-                    reasoning = analysis.get("reasoning", "")
-                    scores = analysis.get("scores", {})
-                    sim_matrix = analysis.get("similarity_matrix", None)
+                # Full similarity scores table
+                analysis_md += "<b>All Document Similarities:</b><br>"
+                analysis_md += "<table border='1' style='border-collapse: collapse;'>"
+                analysis_md += "<tr><th>Document ID</th><th>Similarity</th></tr>"
+                for doc in all_docs:
+                    analysis_md += f"<tr><td>{doc['id']}</td><td>{doc['score']:.4f}</td></tr>"
+                analysis_md += "</table>"
+                analysis_md += "</details>"
 
-                    # Best match highlight
-                    if scores:
-                        best_doc, best_score = max(scores.items(), key=lambda x: x[1])
-                        st.success(f"📄 Best Match: **{best_doc}** (score: {best_score:.2f})")
-
-                    # Reasoning in expander
-                    with st.expander("📝 Explanation"):
-                        st.markdown(reasoning)
-
-                    # Show similarity scores
-                    if scores:
-                        st.markdown("**Similarity Scores:**")
-                        for doc, score in scores.items():
-                            if score > 0.75:
-                                badge = "🟢 High"
-                            elif score > 0.5:
-                                badge = "🟡 Medium"
-                            else:
-                                badge = "🔴 Low"
-                            st.markdown(f"- **{doc}** → {score:.2f} ({badge})")
-
-                    # Full similarity matrix
-                    if sim_matrix is not None:
-                        st.markdown("**Full Similarity Matrix:**")
-                        df = pd.DataFrame(sim_matrix)
-                        st.dataframe(df.style.background_gradient(cmap="Blues"))
-
-                else:
-                    # fallback: just show plain text
-                    with st.expander("📊 Analysis"):
-                        st.markdown(str(analysis))
+                st.markdown(analysis_md, unsafe_allow_html=True)
 
 # ------------------------
 # Export Full Session
