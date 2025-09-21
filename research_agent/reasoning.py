@@ -5,14 +5,18 @@ class MultiStepReasoner:
     # Keep these if you want for older code
     def break_down_query(self, query):
         import re
-        tasks = re.split(r'[.;]', query)
-        return [t.strip() for t in tasks if t.strip()]
+        q = query.lower().strip()
+        parts = re.split(r"\band\b|\bor\b|,|\?|;", q)
+        parts = [p.strip().capitalize() for p in parts if p.strip()]
+        if len(parts) <= 1:
+            return [query]
+        return parts
 
     def explain_reasoning(self, tasks):
-        explanation = "The query is broken down into subtasks:\n"
-        for i, t in enumerate(tasks):
-            explanation += f"{i+1}. {t}\n"
-        return explanation
+        reasoning = []
+        for i, task in enumerate(tasks, 1):
+            reasoning.append(f"{i}. {task}")
+        return "\n".join(reasoning)
 
     # NEW: generate a meaningful answer using retrieved docs
     def answer_query(self, prompt_text, docs):
@@ -26,3 +30,4 @@ class MultiStepReasoner:
         else:
             # fallback: concatenate first sentences
             return "\n".join([d["content"].split(".")[0] + "." for d in doc_texts])
+
