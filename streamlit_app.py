@@ -81,7 +81,7 @@ if user_input.strip() and st.button("Send", key="send_button"):
             if msg["role"] == "user"
         ]
 
-        response, analysis = agent.process_query(user_msg, context=context, top_k=3)
+        response, analysis = agent.process_query(user_msg, context=context, top_k=1)
 
     st.session_state.chat_history.append({
         "role": "assistant",
