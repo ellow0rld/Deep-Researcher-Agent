@@ -107,12 +107,15 @@ if st.session_state.chat_history:
                 analysis_md = "<details><summary>📊 Analysis</summary>"
                 analysis_md += "<table border='1' style='border-collapse: collapse; text-align: left;'>"
                 analysis_md += "<tr><th>Document ID</th><th>Similarity</th></tr>"
-                
+
+                vis = []
                 for doc in msg["analysis"]:
                     doc_id = doc.get("id") or doc.get("doc_id") or "Unknown"
-                    similarity = doc.get("score") or doc.get("similarity") or 0.0
-                    chosen_mark = "✅" if doc.get("chosen") else ""
-                    analysis_md += f"<tr><td>{doc_id}</td><td>{similarity:.4f}</td></tr>"
+                    if doc_id not in vis:
+                        similarity = doc.get("score") or doc.get("similarity") or 0.0
+                        chosen_mark = "✅" if doc.get("chosen") else ""
+                        vis.append(doc_id)
+                        analysis_md += f"<tr><td>{doc_id}</td><td>{similarity:.4f}</td></tr>"
                 
                 analysis_md += "</table></details>"
                 
