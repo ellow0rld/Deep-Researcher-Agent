@@ -61,32 +61,7 @@ if uploaded_files:
     if docs:
         agent.add_documents(docs)
         st.success(f"{len(docs)} documents added to knowledge base.")
-
-# ------------------------
-# Chat Input
-# ------------------------
-
-user_input = st.text_input("Enter your query here:", key="chat_input")
-user_msg = user_input.strip()
-
-# Add user message
-st.session_state.chat_history.append({"role": "user", "content": user_msg})
-
-# Generate AI response with analysis
-with st.spinner("Generating response..."):
-    context = [(msg["content"], msg.get("response","")) 
-               for msg in st.session_state.chat_history 
-               if msg["role"] == "user"]
-    
-    response, analysis = agent.process_query(user_msg, context=context, top_k=3)
-    
-    # Store assistant response and per-query analysis
-    st.session_state.chat_history.append({
-        "role": "assistant",
-        "content": response,
-        "analysis": analysis,
-        "query": user_msg
-    })
+        
 # ------------------------
 # Display Chat History
 # ------------------------
