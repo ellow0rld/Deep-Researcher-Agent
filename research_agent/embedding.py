@@ -6,6 +6,6 @@ class LocalEmbeddingEngine:
         self.model = SentenceTransformer(model_path)
 
     def generate_embedding(self, text):
-        # Returns a numpy array
         emb = self.model.encode([text], convert_to_numpy=True)
         return emb[0]
+
