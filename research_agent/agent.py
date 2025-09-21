@@ -19,9 +19,6 @@ class ResearchAgent:
         self.vector_storage.add_documents(docs, self.embedding_engine)
 
     def export_report(self, chat_history, format="pdf", return_bytes=False):
-        """
-        Export full chat session with similarity analysis.
-        """
         report_text = ""
         for msg in chat_history:
             if msg["role"] == "user":
@@ -31,11 +28,11 @@ class ResearchAgent:
                 if "analysis" in msg:
                     report_text += "Contributing Documents:\n"
                     for doc in msg["analysis"]:
-                        report_text += f"- {doc['doc_id']} | Similarity: {doc['similarity']:.4f}\n"
+                        chosen_mark = "✅" if doc.get("chosen") else ""
+                        report_text += f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
             report_text += "\n"
-        
+
         if format == "pdf":
-            from fpdf import FPDF
             pdf = FPDF()
             pdf.add_page()
             pdf.set_auto_page_break(auto=True, margin=15)
@@ -56,21 +53,34 @@ class ResearchAgent:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(report_text)
                 return path
-            
-    def process_query(self, query, context=None, top_k=5):
+
+    def process_query(self, query, context=None, top_k=3):
+        """
+        Process a query and return a meaningful response along with all documents' similarity scores.
+        Returns:
+          - response: string
+          - analysis: list of dicts with doc id, similarity, and top-k flag
+        """
+        # Generate query embedding
         q_emb = self.embedding_engine.generate_embedding(query)
-        chosen_docs = self.vector_storage.retrieve_similar(q_emb, k=top_k)
-        all_docs = self.vector_storage.retrieve_all_with_scores(q_emb)
-    
-        # Mark chosen docs
-        chosen_ids = set(d["id"] for d in chosen_docs)
+
+        # Retrieve all documents' similarity scores
+        all_docs = self.vector_storage.retrieve_similar(q_emb, k=len(self.vector_storage.vectors))
+
+        # Pick top-k documents
+        top_docs = all_docs[:top_k]
+
+        # Simple response (concatenate first 300 chars of top-k docs)
+        response = "\n".join([f"{d['content'][:300]}..." for d in top_docs])
+
+        # Prepare analysis for all documents
         analysis = []
+        top_doc_ids = [d['id'] for d in top_docs]
         for d in all_docs:
             analysis.append({
                 "id": d["id"],
                 "score": d["score"],
-                "chosen": d["id"] in chosen_ids
+                "chosen": d["id"] in top_doc_ids
             })
-    
-        response = "\n".join([f"{d['content'][:300]}..." for d in chosen_docs])
+
         return response, analysis
