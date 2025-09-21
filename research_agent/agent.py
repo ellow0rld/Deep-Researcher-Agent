@@ -66,7 +66,7 @@ class ResearchAgent:
                     f.write(report_text)
                 return path
 
-    def process_query(self, query, context=None, top_k=3):
+    def process_query(self, query, context=None, top_k=1):
         """
         Process a query and return a meaningful response along with all documents' similarity scores.
         Returns:
@@ -96,6 +96,7 @@ class ResearchAgent:
             })
 
         return response, analysis
+
 
 
 
