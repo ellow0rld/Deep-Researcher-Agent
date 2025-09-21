@@ -69,41 +69,39 @@ class ResearchAgent:
 
     def process_query(self, query, context=None, top_k=1):
         """
-        Process a query and return a meaningful response along with all documents' similarity scores.
+        Process a query and return a meaningful response along with reasoning steps.
         Returns:
           - response: string
           - analysis: list of dicts with doc id, similarity, and top-k flag
+          - reasoning: string (step-by-step breakdown)
         """
-        # Generate query embedding
+        # Step 1: Break query into subtasks
+        tasks = self.reasoner.break_down_query(query)
+        reasoning_steps = self.reasoner.explain_reasoning(tasks)
+    
+        # Step 2: Generate query embedding
         q_emb = self.embedding_engine.generate_embedding(query)
-
-        # Retrieve all documents' similarity scores
-        all_docs = self.vector_storage.retrieve_similar(q_emb, k=len(self.vector_storage.vectors))
-
-        # Pick top-k documents
+    
+        # Step 3: Retrieve all documents with similarity scores
+        all_docs = self.vector_storage.retrieve_all_with_scores(q_emb)
+    
+        # Step 4: Pick top-k documents
         top_docs = all_docs[:top_k]
-
-        # Simple response
-        response = "\n".join([f"{d['content']}\n" for d in top_docs])
-
-        # Prepare analysis for all documents
+    
+        # Step 5: Build answer using reasoning + summarizer
+        answer_text = self.reasoner.answer_query(query, top_docs)
+    
+        # Step 6: Combine reasoning and answer
+        response = f"### Reasoning Steps\n{reasoning_steps}\n\n### Final Answer\n{answer_text}"
+    
+        # Step 7: Prepare analysis
         analysis = []
-        top_doc_ids = [d['id'] for d in top_docs]
+        top_doc_ids = [d["id"] for d in top_docs]
         for d in all_docs:
             analysis.append({
                 "id": d["id"],
                 "score": d["score"],
                 "chosen": d["id"] in top_doc_ids
             })
-
+    
         return response, analysis
-
-
-
-
-
-
-
-
-
-
