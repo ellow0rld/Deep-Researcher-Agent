@@ -67,7 +67,7 @@ class ResearchAgent:
                     f.write(report_text)
                 return path
 
-    def process_query(self, query, context=None, top_k=2):
+    def process_query(self, query, context=None, top_k=1):
         """
         Process a query into subtasks and answer each separately.
         Returns:
@@ -111,3 +111,4 @@ class ResearchAgent:
                 seen.add(d["id"])
     
         return response, analysis
+
