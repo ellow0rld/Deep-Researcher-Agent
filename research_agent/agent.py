@@ -8,11 +8,6 @@ from research_agent.reasoning import MultiStepReasoner
 from research_agent.summarizer import ExtractiveSummarizer
 from fpdf import FPDF
 
-class PDF(FPDF):
-    def header(self):
-        self.set_font("DejaVu", "B", 14)
-        self.cell(0, 10, "Deep Researcher Agent Report", ln=True, align="C")
-
 class ResearchAgent:
     def __init__(self, cache_path="./cache/embeddings.pkl"):
         self.embedding_engine = LocalEmbeddingEngine()
@@ -28,6 +23,10 @@ class ResearchAgent:
                 self.vectors.append({"id": doc["id"], "content": doc["content"], "embedding": emb, "metadata": doc.get("metadata", {})})
 
     def export_report(self, chat_history, format="pdf", return_bytes=False):
+        """
+        Export full chat session with analysis.
+        Uses default fonts, safe for ASCII characters.
+        """
         report_text = ""
         for msg in chat_history:
             if msg["role"] == "user":
@@ -37,25 +36,33 @@ class ResearchAgent:
                 if "analysis" in msg:
                     report_text += "Contributing Documents:\n"
                     for doc in msg["analysis"]:
-                        chosen_mark = "✅" if doc.get("chosen") else ""
+                        # Remove emoji or special characters
+                        chosen_mark = "*" if doc.get("chosen") else ""
                         report_text += f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
             report_text += "\n"
     
-        pdf = PDF()
-        pdf.add_page()
-        # Add a TTF font that supports Unicode
-        pdf.add_font("DejaVu", "", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", uni=True)
-        pdf.set_font("DejaVu", size=12)
-    
-        for line in report_text.split("\n"):
-            pdf.multi_cell(0, 5, line)
-    
-        if return_bytes:
-            return pdf.output(dest='S').encode('latin1', errors='replace')  # now safe
+        if format == "pdf":
+            from fpdf import FPDF
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.set_font("Arial", size=12)
+            for line in report_text.split("\n"):
+                pdf.multi_cell(0, 5, line)
+            if return_bytes:
+                return pdf.output(dest='S').encode('latin1')
+            else:
+                path = "./full_report.pdf"
+                pdf.output(path)
+                return path
         else:
-            path = "./full_report.pdf"
-            pdf.output(path)
-            return path
+            if return_bytes:
+                return report_text.encode("utf-8")
+            else:
+                path = "./full_report.md"
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(report_text)
+                return path
 
     def process_query(self, query, context=None, top_k=3):
         """
@@ -87,6 +94,7 @@ class ResearchAgent:
             })
 
         return response, analysis
+
 
 
 
