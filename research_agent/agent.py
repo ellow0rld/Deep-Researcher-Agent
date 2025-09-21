@@ -23,10 +23,6 @@ class ResearchAgent:
                 self.vectors.append({"id": doc["id"], "content": doc["content"], "embedding": emb, "metadata": doc.get("metadata", {})})
 
     def export_report(self, chat_history, format="pdf", return_bytes=False):
-        """
-        Export full chat session with analysis.
-        Uses default fonts, safe for ASCII characters.
-        """
         report_text = ""
         for msg in chat_history:
             if msg["role"] == "user":
@@ -79,13 +75,11 @@ class ResearchAgent:
     
             answer_text = self.reasoner.answer_query(task, top_docs)
     
-            # Include the subtask header with its answer
             subtask_responses.append(f"Subtask {i}: {task}\n\n{answer_text}\n")
             all_docs.extend(top_docs)
     
         response = "\n".join(subtask_responses)
-    
-        # Collect analysis for optional display
+        
         analysis = []
         seen = set()
         for d in all_docs:
@@ -98,3 +92,4 @@ class ResearchAgent:
                 seen.add(d["id"])
     
         return response, analysis
+
