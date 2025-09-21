@@ -4,6 +4,7 @@ class ExtractiveSummarizer:
         # Simple extractive summarization: return first sentence of each doc
         summary = ""
         for doc in docs:
-            first_sentence = doc["content"].split(".")[0]
-            summary += f"- {first_sentence}.\n"
+            content = doc["content"].split(".")
+            summary += f"- {content}.\n"
         return summary if summary else "No content to summarize."
+
