@@ -9,14 +9,8 @@ class VectorStorage:
         if os.path.exists(cache_path):
             with open(cache_path, "rb") as f:
                 self.vectors = pickle.load(f)
-            # Deduplicate loaded vectors
-            unique = {}
-            for v in self.vectors:
-                if v["id"] not in unique:
-                    unique[v["id"]] = v
-            self.vectors = list(unique.values())
         else:
-            self.vectors = []
+            self.vectors = []  # list of dict: {"id":..., "content":..., "embedding":...}
 
     def add_documents(self, docs, embedding_engine):
         for doc in docs:
@@ -61,4 +55,5 @@ class VectorStorage:
         # Sort descending by similarity
         scores.sort(key=lambda x: x["score"], reverse=True)
         return scores
+
 
