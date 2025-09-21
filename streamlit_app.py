@@ -92,7 +92,7 @@ if st.session_state.chat_history:
                 st.markdown(analysis_md, unsafe_allow_html=True)
 
 # ------------------------
-# Chat Input + Export Dropdown
+# Chat Input + Export
 # ------------------------
 st.subheader("💬 Ask a Question")
 
@@ -121,7 +121,8 @@ with query_col:
 
 with export_col:
     if st.button("Export"):
-        format_choice = st.selectbox("Choose format to download:", ["PDF", "Markdown"])
+        format_choice = st.selectbox("Choose format to download:", ["PDF", "Markdown"], key="export_select")
+        
         if format_choice == "PDF":
             pdf_bytes = agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True)
             st.download_button(
@@ -134,7 +135,7 @@ with export_col:
             md_bytes = agent.export_report(st.session_state.chat_history, format="md", return_bytes=True)
             st.download_button(
                 label="Download Markdown",
-                data=md_bytes,
+                data=md_bytes,  # bytes encoded in UTF-8
                 file_name="research_session.md",
                 mime="text/markdown"
             )
