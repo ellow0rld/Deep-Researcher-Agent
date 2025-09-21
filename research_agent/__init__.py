@@ -2,7 +2,6 @@
 Research Agent Package
 A Python-based research agent that can search, analyze, and synthesize information using local embeddings.
 """
-# __init__.py
 
 from .embedding import LocalEmbeddingEngine
 from .storage import VectorStorage
