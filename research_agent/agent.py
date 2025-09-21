@@ -83,7 +83,7 @@ class ResearchAgent:
         top_docs = all_docs[:top_k]
 
         # Simple response
-        response = "\n".join([f"{d['content']}..." for d in top_docs])
+        response = "\n".join([f"{d['content']}" for d in top_docs])
 
         # Prepare analysis for all documents
         analysis = []
@@ -96,6 +96,7 @@ class ResearchAgent:
             })
 
         return response, analysis
+
 
 
 
