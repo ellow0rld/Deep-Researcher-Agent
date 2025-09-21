@@ -1,6 +1,7 @@
 import os
 import streamlit as st
 import PyPDF2
+import pandas as pd
 from research_agent.agent import ResearchAgent
 
 # ------------------------
@@ -95,13 +96,56 @@ if user_input.strip() and st.button("Send", key="send_button"):
 # ------------------------
 if st.session_state.chat_history:
     st.subheader("💬 Conversation History")
+
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
             st.markdown(f"**You:** {msg['content']}")
         else:
             st.markdown(f"**Assistant:** {msg['content']}")
+
+            # 🎨 Render analysis in a nicer way
             if "analysis" in msg:
-                st.markdown(f"<details><summary>📊 Analysis</summary>{msg['analysis']}</details>", unsafe_allow_html=True)
+                analysis = msg["analysis"]
+
+                st.markdown("### 📊 Analysis Report")
+
+                # If analysis is dict with scores + reasoning
+                if isinstance(analysis, dict):
+                    reasoning = analysis.get("reasoning", "")
+                    scores = analysis.get("scores", {})
+                    sim_matrix = analysis.get("similarity_matrix", None)
+
+                    # Best match highlight
+                    if scores:
+                        best_doc, best_score = max(scores.items(), key=lambda x: x[1])
+                        st.success(f"📄 Best Match: **{best_doc}** (score: {best_score:.2f})")
+
+                    # Reasoning in expander
+                    with st.expander("📝 Explanation"):
+                        st.markdown(reasoning)
+
+                    # Show similarity scores
+                    if scores:
+                        st.markdown("**Similarity Scores:**")
+                        for doc, score in scores.items():
+                            if score > 0.75:
+                                badge = "🟢 High"
+                            elif score > 0.5:
+                                badge = "🟡 Medium"
+                            else:
+                                badge = "🔴 Low"
+                            st.markdown(f"- **{doc}** → {score:.2f} ({badge})")
+
+                    # Full similarity matrix
+                    if sim_matrix is not None:
+                        st.markdown("**Full Similarity Matrix:**")
+                        df = pd.DataFrame(sim_matrix)
+                        st.dataframe(df.style.background_gradient(cmap="Blues"))
+
+                else:
+                    # fallback: just show plain text
+                    with st.expander("📊 Analysis"):
+                        st.markdown(str(analysis))
 
 # ------------------------
 # Export Full Session
