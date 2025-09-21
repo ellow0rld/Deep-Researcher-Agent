@@ -59,7 +59,7 @@ if uploaded_files:
             st.warning(f"Failed to process {f.name}: {e}")
 
     if docs:
-        agent.add_documents(docs)
+        agent.vector_storage.add_documents(docs, agent.embedding_engine)
         st.success(f"{len(docs)} documents added to knowledge base.")
 
 # ------------------------
