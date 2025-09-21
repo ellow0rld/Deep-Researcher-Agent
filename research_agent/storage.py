@@ -32,9 +32,12 @@ class VectorStorage:
         if not self.vectors:
             return []
         scores = []
+        vis = []
         for doc in self.vectors:
-            sim = np.dot(query_emb, doc["embedding"]) / (np.linalg.norm(query_emb) * np.linalg.norm(doc["embedding"]))
-            scores.append({"doc": doc, "score": float(sim)})
+            if doc not in vis:
+                sim = np.dot(query_emb, doc["embedding"]) / (np.linalg.norm(query_emb) * np.linalg.norm(doc["embedding"]))
+                scores.append({"doc": doc, "score": float(sim)})
+                vis.append(doc)
         scores.sort(key=lambda x: x["score"], reverse=True)
         return [{"id": s["doc"]["id"], "content": s["doc"]["content"], "score": s["score"]} for s in scores[:k]]
 
@@ -55,5 +58,6 @@ class VectorStorage:
         # Sort descending by similarity
         scores.sort(key=lambda x: x["score"], reverse=True)
         return scores
+
 
 
