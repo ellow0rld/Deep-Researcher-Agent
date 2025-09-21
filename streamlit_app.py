@@ -74,7 +74,6 @@ if st.session_state.chat_history:
         else:
             st.markdown(f"**Assistant:** {msg['content']}")
             
-            # Display analysis if available
             if "analysis" in msg and msg["analysis"]:
                 analysis_md = "<details><summary>📊 Analysis</summary>"
                 analysis_md += "<table border='1' style='border-collapse: collapse; text-align: left;'>"
@@ -93,50 +92,49 @@ if st.session_state.chat_history:
                 st.markdown(analysis_md, unsafe_allow_html=True)
 
 # ------------------------
-# Chat Input & Export Buttons
+# Chat Input
 # ------------------------
-st.subheader("💬 Ask a Question / Export Full Session")
-
+st.subheader("💬 Ask a Question")
 user_input = st.text_input("Enter your query here:", key="chat_input")
 
-col1, col2, col3 = st.columns([2, 1, 1])
+if user_input.strip() and st.button("Send", key="send_button"):
+    user_msg = user_input.strip()
+    st.session_state.chat_history.append({"role": "user", "content": user_msg})
 
-with col1:
-    if user_input.strip() and st.button("Send", key="send_button"):
-        user_msg = user_input.strip()
-        st.session_state.chat_history.append({"role": "user", "content": user_msg})
+    with st.spinner("Generating response..."):
+        context = [
+            (msg["content"], msg.get("response", ""))
+            for msg in st.session_state.chat_history
+            if msg["role"] == "user"
+        ]
+        response, analysis = agent.process_query(user_msg, context=context, top_k=3)
 
-        with st.spinner("Generating response..."):
-            context = [
-                (msg["content"], msg.get("response", ""))
-                for msg in st.session_state.chat_history
-                if msg["role"] == "user"
-            ]
-            response, analysis = agent.process_query(user_msg, context=context, top_k=3)
+    st.session_state.chat_history.append({
+        "role": "assistant",
+        "content": response,
+        "analysis": analysis,
+        "query": user_msg
+    })
 
-        st.session_state.chat_history.append({
-            "role": "assistant",
-            "content": response,
-            "analysis": analysis,
-            "query": user_msg
-        })
+# ------------------------
+# Export Buttons
+# ------------------------
+export_col1, export_col2 = st.columns(2)
 
-# Export buttons
-if st.session_state.chat_history:
-    with col2:
-        pdf_bytes = agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True)
-        st.download_button(
-            label="Download PDF",
-            data=pdf_bytes,
-            file_name="research_session.pdf",
-            mime="application/pdf"
-        )
+with export_col1:
+    pdf_bytes = agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True)
+    st.download_button(
+        label="Download PDF",
+        data=pdf_bytes,
+        file_name="research_session.pdf",
+        mime="application/pdf"
+    )
 
-    with col3:
-        md_bytes = agent.export_report(st.session_state.chat_history, format="md", return_bytes=True)
-        st.download_button(
-            label="Download Markdown",
-            data=md_bytes,
-            file_name="research_session.md",
-            mime="text/markdown"
-        )
+with export_col2:
+    md_bytes = agent.export_report(st.session_state.chat_history, format="md", return_bytes=True)
+    st.download_button(
+        label="Download Markdown",
+        data=md_bytes,
+        file_name="research_session.md",
+        mime="text/markdown"
+    )
