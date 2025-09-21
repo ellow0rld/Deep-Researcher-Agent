@@ -68,37 +68,24 @@ class ResearchAgent:
                 return path
 
     def process_query(self, query, context=None, top_k=1):
-        """
-        Process a query into subtasks and answer each separately.
-        Returns:
-          - response (markdown string with reasoning + answers)
-          - analysis (all doc scores)
-        """
-        # Step 1: Break query into subtasks
         tasks = self.reasoner.break_down_query(query)
-    
-        # Step 2: For each subtask → retrieve docs → generate answer
         subtask_responses = []
         all_docs = []
+    
         for i, task in enumerate(tasks, 1):
             q_emb = self.embedding_engine.generate_embedding(task)
             docs = self.vector_storage.retrieve_all_with_scores(q_emb)
-    
             top_docs = docs[:top_k]
+    
             answer_text = self.reasoner.answer_query(task, top_docs)
     
-            subtask_responses.append(
-                f"**Subtask {i}: {task}**\n\n{answer_text}\n"
-            )
+            # Include the subtask header with its answer
+            subtask_responses.append(f"Subtask {i}: {task}\n\n{answer_text}\n")
             all_docs.extend(top_docs)
     
-        # Step 3: Merge into final markdown
-        response = "### Reasoning Steps\n"
-        for i, task in enumerate(tasks, 1):
-            response += f"{i}. {task}\n"
-        response += "\n### Answers\n" + "\n".join(subtask_responses)
+        response = "\n".join(subtask_responses)
     
-        # Step 4: Collect analysis (unique doc IDs with scores)
+        # Collect analysis for optional display
         analysis = []
         seen = set()
         for d in all_docs:
@@ -111,4 +98,3 @@ class ResearchAgent:
                 seen.add(d["id"])
     
         return response, analysis
-
