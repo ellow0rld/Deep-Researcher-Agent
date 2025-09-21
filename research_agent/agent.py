@@ -8,6 +8,11 @@ from research_agent.reasoning import MultiStepReasoner
 from research_agent.summarizer import ExtractiveSummarizer
 from fpdf import FPDF
 
+class PDF(FPDF):
+    def header(self):
+        self.set_font("DejaVu", "B", 14)
+        self.cell(0, 10, "Deep Researcher Agent Report", ln=True, align="C")
+
 class ResearchAgent:
     def __init__(self, cache_path="./cache/embeddings.pkl"):
         self.embedding_engine = LocalEmbeddingEngine()
@@ -32,34 +37,25 @@ class ResearchAgent:
                 if "analysis" in msg:
                     report_text += "Contributing Documents:\n"
                     for doc in msg["analysis"]:
-                        # Replace non-latin1 chars with ?
-                        doc_id = doc['id'].encode('latin1', errors='replace').decode('latin1')
                         chosen_mark = "✅" if doc.get("chosen") else ""
-                        chosen_mark = chosen_mark.encode('latin1', errors='replace').decode('latin1')
-                        report_text += f"- {doc_id} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
+                        report_text += f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
             report_text += "\n"
-
-        if format == "pdf":
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.set_font("Arial", size=12)
-            for line in report_text.split("\n"):
-                pdf.multi_cell(0, 5, line)
-            if return_bytes:
-                return pdf.output(dest='S').encode('latin1')
-            else:
-                path = "./full_report.pdf"
-                pdf.output(path)
-                return path
+    
+        pdf = PDF()
+        pdf.add_page()
+        # Add a TTF font that supports Unicode
+        pdf.add_font("DejaVu", "", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", uni=True)
+        pdf.set_font("DejaVu", size=12)
+    
+        for line in report_text.split("\n"):
+            pdf.multi_cell(0, 5, line)
+    
+        if return_bytes:
+            return pdf.output(dest='S').encode('latin1', errors='replace')  # now safe
         else:
-            if return_bytes:
-                return report_text.encode("utf-8")
-            else:
-                path = "./full_report.md"
-                with open(path, "w", encoding="utf-8") as f:
-                    f.write(report_text)
-                return path
+            path = "./full_report.pdf"
+            pdf.output(path)
+            return path
 
     def process_query(self, query, context=None, top_k=3):
         """
@@ -91,5 +87,6 @@ class ResearchAgent:
             })
 
         return response, analysis
+
 
 
