@@ -95,18 +95,27 @@ if user_input.strip() and st.button("Send", key="send_button"):
 # ------------------------
 if st.session_state.chat_history:
     st.subheader("💬 Conversation History")
+    
     for msg in st.session_state.chat_history:
         if msg["role"] == "user":
             st.markdown(f"**You:** {msg['content']}")
         else:
             st.markdown(f"**Assistant:** {msg['content']}")
-            if "analysis" in msg:
+            
+            # Display analysis if available
+            if "analysis" in msg and msg["analysis"]:
                 analysis_md = "<details><summary>📊 Analysis</summary>"
-                analysis_md += "<table border='1' style='border-collapse: collapse; margin-top:5px;'>"
-                analysis_md += "<tr><th>Document ID</th><th>Similarity</th><th>Top-k</th></tr>"
+                analysis_md += "<table border='1' style='border-collapse: collapse; text-align: left;'>"
+                analysis_md += "<tr><th>Document ID</th><th>Similarity</th><th>Top-K</th></tr>"
+                
                 for doc in msg["analysis"]:
-                    analysis_md += f"<tr><td>{doc['id']}</td><td>{doc['score']:.4f}</td><td>{'✅' if doc['chosen'] else ''}</td></tr>"
+                    similarity = f"{doc['score']:.4f}"
+                    # Add a checkmark for top-k documents
+                    chosen_mark = "✅" if doc.get("chosen") else ""
+                    analysis_md += f"<tr><td>{doc['id']}</td><td>{similarity}</td><td>{chosen_mark}</td></tr>"
+                
                 analysis_md += "</table></details>"
+                
                 st.markdown(analysis_md, unsafe_allow_html=True)
 
 # ------------------------
