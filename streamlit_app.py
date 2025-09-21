@@ -53,7 +53,7 @@ if uploaded_files:
                         content += page_text + "\n"
             else:
                 content = f.read().decode("utf-8")
-            
+
             docs.append({"id": f.name, "content": content, "metadata": {}})
         except Exception as e:
             st.warning(f"Failed to process {f.name}: {e}")
@@ -61,34 +61,48 @@ if uploaded_files:
     if docs:
         agent.add_documents(docs)
         st.success(f"{len(docs)} documents added to knowledge base.")
-        
+
 # ------------------------
-# Display Chat History
+# Chat Input & Response
 # ------------------------
 user_input = st.text_input("Enter your query here:", key="chat_input")
 
-if st.button("Send", key="unique_send_button") and user_input.strip():
+if user_input.strip() and st.button("Send", key="send_button"):
     user_msg = user_input.strip()
-    
+
     # Add user message
     st.session_state.chat_history.append({"role": "user", "content": user_msg})
-    
+
     # Generate AI response with analysis
     with st.spinner("Generating response..."):
-        context = [(msg["content"], msg.get("response","")) 
-                   for msg in st.session_state.chat_history 
-                   if msg["role"] == "user"]
-        
+        context = [
+            (msg["content"], msg.get("response", ""))
+            for msg in st.session_state.chat_history
+            if msg["role"] == "user"
+        ]
+
         response, analysis = agent.process_query(user_msg, context=context, top_k=3)
-        
-        # Store assistant response and per-query analysis
-        st.session_state.chat_history.append({
-            "role": "assistant",
-            "content": response,
-            "analysis": analysis,
-            "query": user_msg
-        })
-        
+
+    st.session_state.chat_history.append({
+        "role": "assistant",
+        "content": response,
+        "analysis": analysis,
+        "query": user_msg
+    })
+
+# ------------------------
+# Show Chat History
+# ------------------------
+if st.session_state.chat_history:
+    st.subheader("💬 Conversation History")
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user":
+            st.markdown(f"**You:** {msg['content']}")
+        else:
+            st.markdown(f"**Assistant:** {msg['content']}")
+            if "analysis" in msg:
+                st.markdown(f"<details><summary>📊 Analysis</summary>{msg['analysis']}</details>", unsafe_allow_html=True)
+
 # ------------------------
 # Export Full Session
 # ------------------------
