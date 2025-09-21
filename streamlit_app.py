@@ -106,13 +106,13 @@ if st.session_state.chat_history:
             if "analysis" in msg and msg["analysis"]:
                 analysis_md = "<details><summary>📊 Analysis</summary>"
                 analysis_md += "<table border='1' style='border-collapse: collapse; text-align: left;'>"
-                analysis_md += "<tr><th>Document ID</th><th>Similarity</th><th>Top-K</th></tr>"
+                analysis_md += "<tr><th>Document ID</th><th>Similarity</th></tr>"
                 
                 for doc in msg["analysis"]:
                     doc_id = doc.get("id") or doc.get("doc_id") or "Unknown"
                     similarity = doc.get("score") or doc.get("similarity") or 0.0
                     chosen_mark = "✅" if doc.get("chosen") else ""
-                    analysis_md += f"<tr><td>{doc_id}</td><td>{similarity:.4f}</td><td>{chosen_mark}</td></tr>"
+                    analysis_md += f"<tr><td>{doc_id}</td><td>{similarity:.4f}</td></tr>"
                 
                 analysis_md += "</table></details>"
                 
