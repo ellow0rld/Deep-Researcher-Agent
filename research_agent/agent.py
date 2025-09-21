@@ -67,41 +67,47 @@ class ResearchAgent:
                     f.write(report_text)
                 return path
 
-    def process_query(self, query, context=None, top_k=1):
+    def process_query(self, query, context=None, top_k=2):
         """
-        Process a query and return a meaningful response along with reasoning steps.
+        Process a query into subtasks and answer each separately.
         Returns:
-          - response: string
-          - analysis: list of dicts with doc id, similarity, and top-k flag
-          - reasoning: string (step-by-step breakdown)
+          - response (markdown string with reasoning + answers)
+          - analysis (all doc scores)
         """
         # Step 1: Break query into subtasks
         tasks = self.reasoner.break_down_query(query)
-        reasoning_steps = self.reasoner.explain_reasoning(tasks)
     
-        # Step 2: Generate query embedding
-        q_emb = self.embedding_engine.generate_embedding(query)
+        # Step 2: For each subtask → retrieve docs → generate answer
+        subtask_responses = []
+        all_docs = []
+        for i, task in enumerate(tasks, 1):
+            q_emb = self.embedding_engine.generate_embedding(task)
+            docs = self.vector_storage.retrieve_all_with_scores(q_emb)
     
-        # Step 3: Retrieve all documents with similarity scores
-        all_docs = self.vector_storage.retrieve_all_with_scores(q_emb)
+            top_docs = docs[:top_k]
+            answer_text = self.reasoner.answer_query(task, top_docs)
     
-        # Step 4: Pick top-k documents
-        top_docs = all_docs[:top_k]
+            subtask_responses.append(
+                f"**Subtask {i}: {task}**\n\n{answer_text}\n"
+            )
+            all_docs.extend(top_docs)
     
-        # Step 5: Build answer using reasoning + summarizer
-        answer_text = self.reasoner.answer_query(query, top_docs)
+        # Step 3: Merge into final markdown
+        response = "### Reasoning Steps\n"
+        for i, task in enumerate(tasks, 1):
+            response += f"{i}. {task}\n"
+        response += "\n### Answers\n" + "\n".join(subtask_responses)
     
-        # Step 6: Combine reasoning and answer
-        response = f"### Reasoning Steps\n{reasoning_steps}\n\n### Final Answer\n{answer_text}"
-    
-        # Step 7: Prepare analysis
+        # Step 4: Collect analysis (unique doc IDs with scores)
         analysis = []
-        top_doc_ids = [d["id"] for d in top_docs]
+        seen = set()
         for d in all_docs:
-            analysis.append({
-                "id": d["id"],
-                "score": d["score"],
-                "chosen": d["id"] in top_doc_ids
-            })
+            if d["id"] not in seen:
+                analysis.append({
+                    "id": d["id"],
+                    "score": d["score"],
+                    "chosen": True
+                })
+                seen.add(d["id"])
     
         return response, analysis
