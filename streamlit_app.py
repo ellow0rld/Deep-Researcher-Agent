@@ -66,6 +66,26 @@ if uploaded_files:
 st.subheader("💬 Conversation")
 chat_container = st.container()
 
+# Input Box
+user_input = st.chat_input("Enter your query here:")
+
+if user_input:
+    # Add user message
+    st.session_state.chat_history.append({"role": "user", "content": user_input})
+    
+    # Generate AI response
+    with st.spinner("Generating response..."):
+        context = [(msg["content"], msg.get("response", "")) for msg in st.session_state.chat_history if msg["role"] == "user"]
+        response, analysis = agent.process_query(user_input, context=context, top_k=1)
+
+    # Add assistant message
+    st.session_state.chat_history.append({
+        "role": "assistant",
+        "content": response,
+        "analysis": analysis,
+        "query": user_input
+    })
+
 # Display chat history
 for msg in st.session_state.chat_history:
     if msg["role"] == "user":
@@ -73,25 +93,25 @@ for msg in st.session_state.chat_history:
     else:
         assistant_msg = st.chat_message("assistant")
 
-        # --- Split response into Reasoning + Final Answer ---
+        # Split response into Reasoning + Final Answer
         reasoning_part = ""
         final_answer = msg["content"]
         if "### Reasoning Steps" in msg["content"]:
-            parts = msg["content"].split("### Final Answer")
+            parts = msg["content"].split("### Answers")
             reasoning_part = parts[0].replace("### Reasoning Steps", "").strip()
             if len(parts) > 1:
                 final_answer = parts[1].strip()
 
-        # --- Show Final Answer ---
+        # Show Final Answer
         assistant_msg.subheader("💡 Final Answer")
         assistant_msg.write(final_answer)
 
-        # --- Show Reasoning Steps in collapsible panel ---
+        # Show Reasoning Steps in collapsible panel
         if reasoning_part:
             with assistant_msg.expander("📖 Reasoning Steps"):
                 assistant_msg.markdown(reasoning_part)
 
-        # --- Show Analysis panel (already in your code) ---
+        # Show Analysis panel
         if "analysis" in msg and msg["analysis"]:
             with assistant_msg.expander("📊 Analysis"):
                 for doc in msg["analysis"]:
