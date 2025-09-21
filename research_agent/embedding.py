@@ -9,9 +9,3 @@ class LocalEmbeddingEngine:
         # Returns a numpy array
         emb = self.model.encode([text], convert_to_numpy=True)
         return emb[0]
-
-
-
-
-
-
