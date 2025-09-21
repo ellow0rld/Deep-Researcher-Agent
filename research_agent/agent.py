@@ -59,22 +59,32 @@ class ResearchAgent:
             
     def process_query(self, query, context=None, top_k=5):
         """
-        Process a query and return a meaningful response along with top contributing documents.
+        Process a query and return a meaningful response along with similarity scores for ALL documents.
         Returns:
           - response: string
-          - analysis: list of dicts with doc id and similarity
+          - analysis: dict with all doc similarities + chosen docs
         """
         # Generate query embedding
         q_emb = self.embedding_engine.generate_embedding(query)
-        
-        # Retrieve top-k similar documents
-        docs = self.vector_storage.retrieve_similar(q_emb, k=top_k)
-        
-        # For now: simple combined answer (concatenate top docs' first 300 chars)
-        response = "\n".join([f"{d['content'][:300]}..." for d in docs])
-        
-        # Include doc IDs and similarity scores for analysis
-        analysis = [{"doc_id": d["id"], "similarity": d["score"]} for d in docs]
-        
+    
+        # Retrieve *all* docs with scores
+        all_docs = self.vector_storage.retrieve_all_with_scores(q_emb)
+    
+        # Sort by similarity
+        ranked_docs = sorted(all_docs, key=lambda d: d["score"], reverse=True)
+    
+        # Pick top_k docs for the response
+        chosen_docs = ranked_docs[:top_k]
+    
+        # Simple response (concatenate top docs' first 300 chars)
+        response = "\n".join([f"{d['content'][:300]}..." for d in chosen_docs])
+    
+        # Build analysis: all scores + chosen docs
+        analysis = {
+            "all_scores": [{"doc_id": d["id"], "similarity": d["score"]} for d in ranked_docs],
+            "chosen": [{"doc_id": d["id"], "similarity": d["score"]} for d in chosen_docs]
+        }
+    
         return response, analysis
+
 
