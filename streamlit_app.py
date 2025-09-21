@@ -95,11 +95,6 @@ for msg in st.session_state.chat_history:
         assistant_msg.subheader("💡 Final Answer")
         assistant_msg.markdown(msg["content"]) 
 
-        # Show Reasoning Steps in collapsible panel
-        if reasoning_part:
-            with assistant_msg.expander("📖 Reasoning Steps"):
-                assistant_msg.markdown(reasoning_part)
-
         # Show Analysis panel
         if "analysis" in msg and msg["analysis"]:
             with assistant_msg.expander("📊 Analysis"):
