@@ -27,8 +27,12 @@ A local AI-powered research assistant that helps you analyze documents, answer c
 ## Web URL
 https://deep-researcher-agent-1.streamlit.app/
 
-## Screenshots
+# Screenshots
+## Home Page
 <img width="2275" height="1488" alt="image" src="https://github.com/user-attachments/assets/4d43202f-467b-49d1-ad53-acdf76a2a7fd" />
+## Upload Documents
 <img width="1885" height="836" alt="image" src="https://github.com/user-attachments/assets/f418d7b2-754d-47eb-a89a-30085046820b" />
+## Query
 <img width="1504" height="1383" alt="image" src="https://github.com/user-attachments/assets/f49d2a4a-f448-4549-b581-9023e6d22d24" />
+## Follow ups/New query
 <img width="1672" height="1612" alt="image" src="https://github.com/user-attachments/assets/9024ccf0-9c68-484b-b19e-5905b94deff4" />
