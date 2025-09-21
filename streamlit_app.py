@@ -109,7 +109,7 @@ if user_input:
     # Generate AI response
     with st.spinner("Generating response..."):
         context = [(msg["content"], msg.get("response", "")) for msg in st.session_state.chat_history if msg["role"] == "user"]
-        response, analysis = agent.process_query(user_input, context=context, top_k=3)
+        response, analysis = agent.process_query(user_input, context=context, top_k=1)
 
     st.session_state.chat_history.append({
         "role": "assistant",
