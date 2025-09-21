@@ -10,7 +10,7 @@ class VectorStorage:
             with open(cache_path, "rb") as f:
                 self.vectors = pickle.load(f)
         else:
-            self.vectors = []  # list of dict: {"id":..., "content":..., "embedding":...}
+            self.vectors = []
 
     def add_documents(self, docs, embedding_engine):
         for doc in docs:
@@ -21,14 +21,10 @@ class VectorStorage:
                 "embedding": emb,
                 "metadata": doc.get("metadata", {})
             })
-        # Save to cache
         with open(self.cache_path, "wb") as f:
             pickle.dump(self.vectors, f)
 
     def retrieve_similar(self, query_emb, k):
-        """
-        Return top-k most similar documents.
-        """
         if not self.vectors:
             return []
         scores = []
@@ -42,9 +38,6 @@ class VectorStorage:
         return [{"id": s["doc"]["id"], "content": s["doc"]["content"], "score": s["score"]} for s in scores[:k]]
 
     def retrieve_all_with_scores(self, query_emb):
-        """
-        Return all documents with similarity scores.
-        """
         if not self.vectors:
             return []
         scores = []
@@ -58,10 +51,5 @@ class VectorStorage:
                     "score": float(sim)
                 })
                 vis.append(doc["id"])
-        # Sort descending by similarity
         scores.sort(key=lambda x: x["score"], reverse=True)
         return scores
-
-
-
-
