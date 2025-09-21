@@ -1,7 +1,6 @@
 import os
 import streamlit as st
 import PyPDF2
-import pandas as pd
 from research_agent.agent import ResearchAgent
 
 # ------------------------
@@ -102,27 +101,12 @@ if st.session_state.chat_history:
         else:
             st.markdown(f"**Assistant:** {msg['content']}")
             if "analysis" in msg:
-                analysis = msg["analysis"]
-                # Display top-k chosen docs first
-                chosen_docs = analysis["chosen"]
-                all_docs = analysis["all_scores"]
-
-                analysis_md = "<details><summary>📊 Analysis (click to expand)</summary>"
-                analysis_md += "<br><b>Top Contributing Documents:</b><br>"
-                analysis_md += "<ul>"
-                for doc in chosen_docs:
-                    analysis_md += f"<li>{doc['id']} | Similarity: {doc['score']:.4f}</li>"
-                analysis_md += "</ul><br>"
-
-                # Full similarity scores table
-                analysis_md += "<b>All Document Similarities:</b><br>"
-                analysis_md += "<table border='1' style='border-collapse: collapse;'>"
-                analysis_md += "<tr><th>Document ID</th><th>Similarity</th></tr>"
-                for doc in all_docs:
-                    analysis_md += f"<tr><td>{doc['id']}</td><td>{doc['score']:.4f}</td></tr>"
-                analysis_md += "</table>"
-                analysis_md += "</details>"
-
+                analysis_md = "<details><summary>📊 Analysis</summary>"
+                analysis_md += "<table border='1' style='border-collapse: collapse; margin-top:5px;'>"
+                analysis_md += "<tr><th>Document ID</th><th>Similarity</th><th>Top-k</th></tr>"
+                for doc in msg["analysis"]:
+                    analysis_md += f"<tr><td>{doc['id']}</td><td>{doc['score']:.4f}</td><td>{'✅' if doc['chosen'] else ''}</td></tr>"
+                analysis_md += "</table></details>"
                 st.markdown(analysis_md, unsafe_allow_html=True)
 
 # ------------------------
