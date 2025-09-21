@@ -92,15 +92,8 @@ for msg in st.session_state.chat_history:
         st.chat_message("user").write(msg["content"])
     else:
         assistant_msg = st.chat_message("assistant")
-
-        # Split response into Reasoning + Final Answer
-        reasoning_part = ""
-        final_answer = msg["content"]
-        if "### Reasoning Steps" in msg["content"]:
-            parts = msg["content"].split("### Answers")
-            reasoning_part = parts[0].replace("### Reasoning Steps", "").strip()
-            if len(parts) > 1:
-                final_answer = parts[1].strip()
+        assistant_msg.subheader("💡 Final Answer")
+        assistant_msg.markdown(msg["content"]) 
 
         # Show Final Answer
         assistant_msg.subheader("💡 Final Answer")
