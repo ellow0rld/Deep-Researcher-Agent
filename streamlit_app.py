@@ -26,7 +26,7 @@ if "chat_history" not in st.session_state:
 # ------------------------
 # UI
 # ------------------------
-st.title("🧠 Deep Researcher Agent")
+st.title("Deep Researcher Agent")
 st.write("A local AI-powered research assistant that handles queries, reasoning, summarization, and exports reports.")
 
 # ------------------------
@@ -72,8 +72,26 @@ for msg in st.session_state.chat_history:
         st.chat_message("user").write(msg["content"])
     else:
         assistant_msg = st.chat_message("assistant")
-        assistant_msg.write(msg["content"])
-        # Add collapsible analysis if available
+
+        # --- Split response into Reasoning + Final Answer ---
+        reasoning_part = ""
+        final_answer = msg["content"]
+        if "### Reasoning Steps" in msg["content"]:
+            parts = msg["content"].split("### Final Answer")
+            reasoning_part = parts[0].replace("### Reasoning Steps", "").strip()
+            if len(parts) > 1:
+                final_answer = parts[1].strip()
+
+        # --- Show Final Answer ---
+        assistant_msg.subheader("💡 Final Answer")
+        assistant_msg.write(final_answer)
+
+        # --- Show Reasoning Steps in collapsible panel ---
+        if reasoning_part:
+            with assistant_msg.expander("📖 Reasoning Steps"):
+                assistant_msg.markdown(reasoning_part)
+
+        # --- Show Analysis panel (already in your code) ---
         if "analysis" in msg and msg["analysis"]:
             with assistant_msg.expander("📊 Analysis"):
                 for doc in msg["analysis"]:
