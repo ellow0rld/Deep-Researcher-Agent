@@ -15,8 +15,12 @@ class ResearchAgent:
         self.reasoner = MultiStepReasoner()
         self.summarizer = ExtractiveSummarizer()
 
-    def add_documents(self, docs):
-        self.vector_storage.add_documents(docs, self.embedding_engine)
+    def add_documents(self, docs, embedding_engine):
+        existing_ids = {v["id"] for v in self.vectors}
+        for doc in docs:
+            if doc["id"] not in existing_ids:
+                emb = embedding_engine.generate_embedding(doc["content"])
+                self.vectors.append({"id": doc["id"], "content": doc["content"], "embedding": emb, "metadata": doc.get("metadata", {})})
 
     def export_report(self, chat_history, format="pdf", return_bytes=False):
         report_text = ""
@@ -84,3 +88,4 @@ class ResearchAgent:
             })
 
         return response, analysis
+
