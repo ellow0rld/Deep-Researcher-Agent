@@ -109,10 +109,10 @@ if st.session_state.chat_history:
                 analysis_md += "<tr><th>Document ID</th><th>Similarity</th><th>Top-K</th></tr>"
                 
                 for doc in msg["analysis"]:
-                    similarity = f"{doc['score']:.4f}"
-                    # Add a checkmark for top-k documents
+                    doc_id = doc.get("id") or doc.get("doc_id") or "Unknown"
+                    similarity = doc.get("score") or doc.get("similarity") or 0.0
                     chosen_mark = "✅" if doc.get("chosen") else ""
-                    analysis_md += f"<tr><td>{doc['id']}</td><td>{similarity}</td><td>{chosen_mark}</td></tr>"
+                    analysis_md += f"<tr><td>{doc_id}</td><td>{similarity:.4f}</td><td>{chosen_mark}</td></tr>"
                 
                 analysis_md += "</table></details>"
                 
