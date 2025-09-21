@@ -15,12 +15,20 @@ class VectorStorage:
     def add_documents(self, docs, embedding_engine):
         for doc in docs:
             emb = embedding_engine.generate_embedding(doc["content"])
-            self.vectors.append({"id": doc["id"], "content": doc["content"], "embedding": emb, "metadata": doc.get("metadata", {})})
+            self.vectors.append({
+                "id": doc["id"],
+                "content": doc["content"],
+                "embedding": emb,
+                "metadata": doc.get("metadata", {})
+            })
         # Save to cache
         with open(self.cache_path, "wb") as f:
             pickle.dump(self.vectors, f)
 
     def retrieve_similar(self, query_emb, k):
+        """
+        Return top-k most similar documents.
+        """
         if not self.vectors:
             return []
         scores = []
@@ -30,5 +38,20 @@ class VectorStorage:
         scores.sort(key=lambda x: x["score"], reverse=True)
         return [{"id": s["doc"]["id"], "content": s["doc"]["content"], "score": s["score"]} for s in scores[:k]]
 
-
-
+    def retrieve_all_with_scores(self, query_emb):
+        """
+        Return all documents with similarity scores.
+        """
+        if not self.vectors:
+            return []
+        scores = []
+        for doc in self.vectors:
+            sim = np.dot(query_emb, doc["embedding"]) / (np.linalg.norm(query_emb) * np.linalg.norm(doc["embedding"]))
+            scores.append({
+                "id": doc["id"],
+                "content": doc["content"],
+                "score": float(sim)
+            })
+        # Sort descending by similarity
+        scores.sort(key=lambda x: x["score"], reverse=True)
+        return scores
