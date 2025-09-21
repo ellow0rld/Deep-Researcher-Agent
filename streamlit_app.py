@@ -67,7 +67,7 @@ if uploaded_files:
 # ------------------------
 user_input = st.text_input("Enter your query here:")
 
-if st.button("Send", key="send_button") and user_input.strip():
+user_input = st.text_input("Enter your query here:", key="chat_input")
     user_msg = user_input.strip()
     
     # Add user message
@@ -119,17 +119,13 @@ if st.button("Send", key="unique_send_button") and user_input.strip():
 # Export Full Session
 # ------------------------
 if st.session_state.chat_history:
-    full_report = ""
-    for msg in st.session_state.chat_history:
-        full_report += f"{msg['role'].capitalize()}: {msg['content']}\n\n"
-
     st.subheader("📤 Export Full Session")
     col1, col2 = st.columns(2)
 
     with col1:
         st.download_button(
             label="Download PDF",
-            data=agent.export_report(full_report, format="pdf", return_bytes=True),
+            data=agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True),
             file_name="research_session.pdf",
             mime="application/pdf"
         )
@@ -137,7 +133,7 @@ if st.session_state.chat_history:
     with col2:
         st.download_button(
             label="Download Markdown",
-            data=agent.export_report(full_report, format="md", return_bytes=True),
+            data=agent.export_report(st.session_state.chat_history, format="md", return_bytes=True),
             file_name="research_session.md",
             mime="text/markdown"
         )
