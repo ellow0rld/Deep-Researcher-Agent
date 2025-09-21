@@ -106,26 +106,15 @@ if user_input:
 # ------------------------
 # Export Full Session
 # ------------------------
-if st.session_state.chat_history:
-    col1, col2, col3 = st.columns([3, 6, 3])
-
-    with col2:
-        user_input = st.text_input("Enter your query here:", key="chat_input")
-    
-    with col3:
-        pdf_bytes = agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True)
-        md_bytes = agent.export_report(st.session_state.chat_history, format="md", return_bytes=True)
-        
-        st.download_button(
-            label="PDF",
-            data=pdf_bytes,
-            file_name="research_session.pdf",
-            mime="application/pdf"
-        )
-        
-        st.download_button(
-            label="MD",
-            data=md_bytes,
-            file_name="research_session.md",
-            mime="text/markdown"
-        )
+if st.session_state.chat_history: 
+    col1, col2 = st.columns(2) 
+    with col1: 
+        st.download_button( 
+            label="Download PDF", 
+            data=agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True), 
+            file_name="research_session.pdf", mime="application/pdf" ) 
+    with col2: 
+        st.download_button( 
+            label="Download Markdown", 
+            data=agent.export_report(st.session_state.chat_history, format="md", return_bytes=True), 
+            file_name="research_session.md", mime="text/markdown" )
