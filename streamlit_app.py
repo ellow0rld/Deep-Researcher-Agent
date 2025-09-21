@@ -121,7 +121,7 @@ for msg in st.session_state.chat_history:
 # ------------------------
 # Input Box
 # ------------------------
-user_input = st.chat_input("Enter your query here:")
+user_input = st.chat_input("Enter your query here:", key="main_chat_input")
 
 if user_input:
     st.session_state.chat_history.append({"role": "user", "content": user_input})
@@ -137,9 +137,8 @@ if user_input:
         "analysis": analysis,
         "query": user_input
     })
-    
-    # Rerun to display the new message
     st.experimental_rerun()
+    
 
 # ------------------------
 # Export Full Session
