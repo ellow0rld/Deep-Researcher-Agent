@@ -35,10 +35,12 @@ class ResearchAgent:
                 report_text += f"A: {msg['content']}\n"
                 if "analysis" in msg:
                     report_text += "Contributing Documents:\n"
+                    vis = []
                     for doc in msg["analysis"]:
-                        # Remove emoji or special characters
                         chosen_mark = "*" if doc.get("chosen") else ""
-                        report_text += f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
+                        if doc['id'] not in vis:
+                            report_text += f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
+                            vis.append(doc['id'])
             report_text += "\n"
     
         if format == "pdf":
@@ -94,6 +96,7 @@ class ResearchAgent:
             })
 
         return response, analysis
+
 
 
 
