@@ -107,7 +107,6 @@ if user_input:
 # Export Full Session
 # ------------------------
 if st.session_state.chat_history:
-    st.subheader("📤 Export Full Session")
     col1, col2 = st.columns(2)
     
     with col1:
