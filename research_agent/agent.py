@@ -42,6 +42,7 @@ class ResearchAgent:
                             report_text += f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
                             vis.append(doc['id'])
             report_text += "\n"
+            safe_text = report_text.encode("ascii", errors="ignore").decode("ascii")
     
         if format == "pdf":
             from fpdf import FPDF
@@ -49,7 +50,7 @@ class ResearchAgent:
             pdf.add_page()
             pdf.set_auto_page_break(auto=True, margin=15)
             pdf.set_font("Arial", size=12)
-            for line in report_text.split("\n"):
+            for line in safe_text.split("\n"):
                 pdf.multi_cell(0, 5, line)
             if return_bytes:
                 return pdf.output(dest='S').encode('latin1')
@@ -96,6 +97,7 @@ class ResearchAgent:
             })
 
         return response, analysis
+
 
 
 
