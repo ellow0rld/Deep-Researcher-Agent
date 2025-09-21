@@ -32,8 +32,11 @@ class ResearchAgent:
                 if "analysis" in msg:
                     report_text += "Contributing Documents:\n"
                     for doc in msg["analysis"]:
+                        # Replace non-latin1 chars with ?
+                        doc_id = doc['id'].encode('latin1', errors='replace').decode('latin1')
                         chosen_mark = "✅" if doc.get("chosen") else ""
-                        report_text += f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
+                        chosen_mark = chosen_mark.encode('latin1', errors='replace').decode('latin1')
+                        report_text += f"- {doc_id} | Similarity: {doc['score']:.4f} {chosen_mark}\n"
             report_text += "\n"
 
         if format == "pdf":
@@ -88,4 +91,5 @@ class ResearchAgent:
             })
 
         return response, analysis
+
 
