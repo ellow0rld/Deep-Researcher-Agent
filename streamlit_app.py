@@ -27,7 +27,9 @@ if "chat_history" not in st.session_state:
 # UI
 # ------------------------
 st.title("🧠 Deep Researcher Agent")
-st.write("A local AI-powered research assistant that handles queries, reasoning, summarization, and exports reports.")
+st.write(
+    "A local AI-powered research assistant that handles queries, reasoning, summarization, and exports reports."
+)
 
 # ------------------------
 # Upload Documents
@@ -61,66 +63,81 @@ if uploaded_files:
         st.success(f"{len(docs)} documents added to knowledge base.")
 
 # ------------------------
-# Chat Messages
+# Chat Input
 # ------------------------
-st.subheader("💬 Conversation")
-chat_container = st.container()
-
-# Display chat history
-for msg in st.session_state.chat_history:
-    if msg["role"] == "user":
-        st.chat_message("user").write(msg["content"])
-    else:
-        assistant_msg = st.chat_message("assistant")
-        assistant_msg.write(msg["content"])
-        # Add collapsible analysis if available
-        if "analysis" in msg and msg["analysis"]:
-            with assistant_msg.expander("📊 Analysis"):
-                for doc in msg["analysis"]:
-                    chosen_mark = "*" if doc.get("chosen") else ""
-                    st.markdown(f"- {doc['id']} | Similarity: {doc['score']:.4f} {chosen_mark}")
+user_input = st.text_input("Enter your query here:", key="chat_input")
 
 # ------------------------
-# Input Box
+# Export Buttons
 # ------------------------
-user_input = st.chat_input("Enter your query here:")
+if st.session_state.chat_history:
+    col1, col2 = st.columns(2)
+    with col1:
+        pdf_bytes = agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True)
+        st.download_button(
+            label="Download Full Report PDF",
+            data=pdf_bytes,
+            file_name="research_session.pdf",
+            mime="application/pdf"
+        )
 
-if user_input:
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
-    
-    # Generate AI response
+    with col2:
+        md_bytes = agent.export_report(st.session_state.chat_history, format="md", return_bytes=True)
+        st.download_button(
+            label="Download Full Report Markdown",
+            data=md_bytes,
+            file_name="research_session.md",
+            mime="text/markdown"
+        )
+
+# ------------------------
+# Generate AI response
+# ------------------------
+if user_input.strip() and st.button("Send", key="send_button"):
+    user_msg = user_input.strip()
+    st.session_state.chat_history.append({"role": "user", "content": user_msg})
+
     with st.spinner("Generating response..."):
-        context = [(msg["content"], msg.get("response", "")) for msg in st.session_state.chat_history if msg["role"] == "user"]
-        response, analysis = agent.process_query(user_input, context=context, top_k=3)
+        context = [
+            (msg["content"], msg.get("response", ""))
+            for msg in st.session_state.chat_history
+            if msg["role"] == "user"
+        ]
+        response, analysis = agent.process_query(user_msg, context=context, top_k=3)
 
     st.session_state.chat_history.append({
         "role": "assistant",
         "content": response,
         "analysis": analysis,
-        "query": user_input
+        "query": user_msg
     })
-    
-    # Rerun to display the new message
-    st.experimental_rerun()
 
 # ------------------------
-# Export Full Session
+# Show Chat History
 # ------------------------
 if st.session_state.chat_history:
-    st.subheader("📤 Export Full Session")
-    col1, col2 = st.columns(2)
+    st.subheader("💬 Conversation History")
     
-    with col1:
-        st.download_button(
-            label="Download PDF",
-            data=agent.export_report(st.session_state.chat_history, format="pdf", return_bytes=True),
-            file_name="research_session.pdf",
-            mime="application/pdf"
-        )
-    with col2:
-        st.download_button(
-            label="Download Markdown",
-            data=agent.export_report(st.session_state.chat_history, format="md", return_bytes=True),
-            file_name="research_session.md",
-            mime="text/markdown"
-        )
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user":
+            st.markdown(f"**You:** {msg['content']}")
+        else:
+            st.markdown(f"**Assistant:** {msg['content']}")
+            
+            # Display analysis if available
+            if "analysis" in msg and msg["analysis"]:
+                analysis_md = "<details><summary>📊 Analysis</summary>"
+                analysis_md += "<table border='1' style='border-collapse: collapse; text-align: left;'>"
+                analysis_md += "<tr><th>Document ID</th><th>Similarity</th><th>Top-K</th></tr>"
+                
+                seen_docs = set()
+                for doc in msg["analysis"]:
+                    if doc['id'] in seen_docs:
+                        continue
+                    similarity = f"{doc['score']:.4f}"
+                    chosen_mark = "✅" if doc.get("chosen") else ""
+                    analysis_md += f"<tr><td>{doc['id']}</td><td>{similarity}</td><td>{chosen_mark}</td></tr>"
+                    seen_docs.add(doc['id'])
+                
+                analysis_md += "</table></details>"
+                st.markdown(analysis_md, unsafe_allow_html=True)
